@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Users table</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div id="app">
+        <table class="users-table striped">
+            <thead>
+                <tr>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>email</th>
+                    <th>avatar</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tr v-for="user in filteredUsers" :key="user.id">
+                <td>{{user.id}}</td>
+                <td>{{user.name}}</td>
+                <td>{{user.email}}</td>
+                <td><img :src="user.avatar"/></td>
+                <td>
+                    <i class="user__btn fa fa-pencil fa-lg" aria-hidden="true" @click.prevent="editUser(user.id)"></i>
+                </td>
+                <td>
+                    <i class="user__btn fa fa-trash fa-lg" aria-hidden="true" @click.prevent="deleteUser(user.id)"></i>
+                </td>
+            </tr>
+        </table>
+        <div class="user-panel">
+            <div class="user-panel__wrapper">
+                <button class="btn add-user-btn" type="button" @click.prevent="addUser">Add user</button>
+                <input class="user-filter" placeholder="FILTER" type="text" v-model="usersFilter">
+            </div>
+        </div>
+        <div id="modal1" class="modal">
+            <div class="modal-content">
+                <label><input type="text" name="name" v-model="userEditing.name">Name</label>
+                <label><input type="email" name="email" v-model="userEditing.email">Email</label>
+                <label><input type="text" name="avatar" v-model="userEditing.avatar">Avatar url</label>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="waves-effect waves-green btn-flat" @click.prevent="saveUser">Save</a>
+                <a href="#!" class="waves-effect waves-green btn-flat" @click.prevent="cancelEdit">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            lastUserId: 0,
+            users: [],
+            usersFilter: "",
+            userEditing: {
+                id: 0,
+                name: "",
+                email: "",
+                avatar: ""
+            },
+            editModalWindow: null
+        },
+        computed: {
+            filteredUsers() {
+                if (this.usersFilter.trim() === "") {
+                    return this.users;
+                } else {
+                    return this.users.filter(user =>
+                        user.name.includes(this.usersFilter.trim()) || user.email.includes(this.usersFilter.trim())
+                    )
+                }
+            }
+        },
+        methods: {
+            deleteUser(id) {
+                this.users = this.users.filter(user => user.id !== id);
+            },
+            editUser(id) {
+                this.userEditing = {...this.users.find(user => user.id === id)};
+                this.editModalWindow.open();
+            },
+            saveUser() {
+                if (this.userEditing.id > this.lastUserId) {
+                    this.lastUserId++;
+                    this.users.push(this.userEditing);
+                } else {
+                    this.users = this.users.map(user => {
+                        if(user.id === this.userEditing.id)
+                        {
+                            return this.userEditing
+                        }
+                        return user;
+                    });
+                }
+                this.editModalWindow.close();
+            },
+            cancelEdit() {
+                this.editModalWindow.close();
+            },
+            addUser() {
+                this.userEditing = {
+                    id: this.lastUserId + 1,
+                    name: "",
+                    email: "",
+                    avatar: ""
+                };
+                this.editModalWindow.open();
+            }
+        },
+        mounted() {
+            fetch('https://jsonplaceholder.typicode.com/users/')
+                .then(response => response.json())
+                .then(users => (
+                    users.forEach(user => {
+                        this.lastUserId = user.id;
+                        this.users.push({
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            avatar: "http://placehold.it/50/" + user.id
+                        });
+                    }))
+                );
+            this.editModalWindow = M.Modal.init(document.querySelector('.modal'));
+        }
+    });
+</script>
+</body>
+</html>
