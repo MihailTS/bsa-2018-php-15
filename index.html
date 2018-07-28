@@ -74,7 +74,8 @@
                     return this.users;
                 } else {
                     return this.users.filter(user =>
-                        user.name.includes(this.usersFilter.trim()) || user.email.includes(this.usersFilter.trim())
+                        (user.name && user.name.toLowerCase().includes(this.usersFilter.trim().toLowerCase())) || 
+                        (user.email && user.email.toLowerCase().includes(this.usersFilter.trim().toLowerCase()))
                     )
                 }
             }

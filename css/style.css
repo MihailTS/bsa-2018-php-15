@@ -24,6 +24,7 @@
 .user-filter {
     display: inline-block;
     max-width: 400px;
+    color:white;
 }
 
 .user-panel__wrapper {
